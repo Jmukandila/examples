@@ -1,0 +1,68 @@
+# A web front end calling an API that stores notes in Postgres, on your own hostname with
+# automatic TLS and a rate limit. Replace notes.example.com with a host you own; it must
+# resolve to your Miabi gateway.
+apiVersion: miabi.io/v1
+kind: Project
+metadata:
+  name: notes
+spec:
+  description: Node front end, Python API and Postgres, served on a custom domain.
+  resources:
+    - apiVersion: miabi.io/v1
+      kind: Database
+      metadata: { name: notes-db }
+      spec:
+        engine: postgres
+        version: "17-alpine"
+
+    - apiVersion: miabi.io/v1
+      kind: Application
+      metadata: { name: notes-api }
+      spec:
+        image: ghcr.io/miabi-io/examples/python
+        tag: latest
+        ports:
+          - container: 8000       # private: only notes-web reaches it
+        healthcheck: { type: http, path: /healthz }
+        env:
+          APP_NAME: notes-api
+          DATABASE_URL: "{{ .databases.notes-db.uri }}"
+        secretEnv: [DATABASE_URL]
+        resources: { memory: 256Mi, cpu: "0.5" }
+
+    - apiVersion: miabi.io/v1
+      kind: Application
+      metadata: { name: notes-web }
+      spec:
+        image: ghcr.io/miabi-io/examples/node
+        tag: latest
+        ports:
+          - container: 3000
+        healthcheck: { type: http, path: /healthz }
+        env:
+          APP_NAME: notes-web
+          UPSTREAM_URL: "{{ .applications.notes-api }}"    # http://notes-api:8000
+        resources: { memory: 256Mi, cpu: "0.5" }
+
+    - apiVersion: miabi.io/v1
+      kind: Domain
+      metadata: { name: notes.example.com }
+      spec:
+        tls: acme
+
+    - apiVersion: miabi.io/v1
+      kind: Middleware
+      metadata: { name: notes-ratelimit }
+      spec:
+        type: rateLimit
+        rule: { unit: minute, requestsPerUnit: 120 }
+
+    - apiVersion: miabi.io/v1
+      kind: Route
+      metadata: { name: notes-web }
+      spec:
+        hosts: [notes.example.com]
+        app: notes-web
+        port: 3000
+        tls: acme
+        middlewares: [notes-ratelimit]

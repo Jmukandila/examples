@@ -1,0 +1,22 @@
+# Runs when this folder is the root of its own repository: create a Git app from that
+# repository and Miabi offers to adopt this file. Every deploy then runs it.
+apiVersion: miabi.io/v1
+kind: Pipeline
+metadata:
+  name: python-example
+on:
+  push:
+    branches: [main]
+  manual: true
+steps:
+  - name: test
+    image: python:3.13-slim
+    run: |
+      pip install --quiet --disable-pip-version-check -r requirements-dev.txt
+      python -m pytest -q
+
+  - name: build
+    uses: build
+
+  - name: deploy
+    uses: deploy

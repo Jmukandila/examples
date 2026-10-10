@@ -1,0 +1,26 @@
+# Gate on GitHub first, then hand the exact commit to a Miabi pipeline, which builds on
+# your runners and deploys. Use it when inbound webhooks to Miabi are blocked.
+#
+#   Repository variable  MIABI_SERVER       https://miabi.example.com
+#   Repository variable  MIABI_WORKSPACE    the workspace name
+#   Repository variable  MIABI_PIPELINE_ID  the pipeline's name, id or uid
+#   Repository secret    MIABI_TOKEN        an API token with the deploy scope
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger the Miabi pipeline
+        env:
+          MIABI_TOKEN: ${{ secrets.MIABI_TOKEN }}
+          URL: ${{ vars.MIABI_SERVER }}/api/v1/workspaces/${{ vars.MIABI_WORKSPACE }}/pipelines/${{ vars.MIABI_PIPELINE_ID }}/trigger
+          MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          jq -n --arg commit "$GITHUB_SHA" --arg msg "$MESSAGE" '{commit: $commit, commit_message: $msg}' |
+            curl -fsS -X POST "$URL" \
+              -H "Authorization: Bearer $MIABI_TOKEN" -H 'Content-Type: application/json' -d @-

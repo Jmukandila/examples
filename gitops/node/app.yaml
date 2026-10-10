@@ -1,0 +1,20 @@
+apiVersion: miabi.io/v1
+kind: Application
+metadata:
+  name: node-example
+spec:
+  image: ghcr.io/miabi-io/examples/node
+  tag: latest
+  externalLabel: node-example     # https://node-example.<your-external-domain>
+  ports:
+    - container: 3000
+      externalAccess: true
+  healthcheck:
+    type: http
+    path: /healthz
+    intervalSeconds: 10
+  env:
+    APP_NAME: node-example
+  resources:
+    memory: 256Mi
+    cpu: "0.5"

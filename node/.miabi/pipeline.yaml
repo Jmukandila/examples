@@ -1,0 +1,20 @@
+# Runs when this folder is the root of its own repository: create a Git app from that
+# repository and Miabi offers to adopt this file. Every deploy then runs it.
+apiVersion: miabi.io/v1
+kind: Pipeline
+metadata:
+  name: node-example
+on:
+  push:
+    branches: [main]
+  manual: true
+steps:
+  - name: test
+    image: node:22-alpine
+    run: npm ci --no-audit --no-fund && npm test
+
+  - name: build
+    uses: build
+
+  - name: deploy
+    uses: deploy

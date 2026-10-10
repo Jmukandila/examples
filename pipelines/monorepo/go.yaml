@@ -1,0 +1,34 @@
+# Bind to an application created from https://github.com/miabi-io/examples.
+# context points the build at one directory of the monorepo.
+apiVersion: miabi.io/v1
+kind: Pipeline
+metadata:
+  name: go-example
+on:
+  push:
+    branches: [main]
+  manual: true
+env:
+  CGO_ENABLED: "0"
+steps:
+  - name: test
+    image: golang:1.25-alpine
+    run: cd go && go vet ./... && go test ./...
+
+  # A build step sees no env, so the version reaches the Dockerfile as a file in the context.
+  - name: version
+    image: alpine:3.22
+    run: |
+      SHORT=$(echo "$MIABI_COMMIT" | cut -c1-7)
+      VERSION="$(cat go/VERSION)${SHORT:+-$SHORT}"
+      echo "$VERSION" > go/.version
+      echo "VERSION=$VERSION" >> "$MIABI_ENV"
+
+  - name: build
+    uses: build
+    context: go
+    dockerfile: go/Dockerfile
+    platforms: [linux/amd64, linux/arm64]
+
+  - name: deploy
+    uses: deploy

@@ -1,0 +1,30 @@
+# Production moves only by commit: bump the tag here to promote what staging ran.
+apiVersion: miabi.io/v1
+kind: Application
+metadata:
+  name: go-example
+  labels:
+    environment: production
+spec:
+  image: ghcr.io/miabi-io/examples/go
+  tag: "1.0.0"
+  ports:
+    - container: 8080
+      externalAccess: true
+  deployment:
+    strategy: rolling
+  healthcheck:
+    type: http
+    path: /healthz
+    intervalSeconds: 10
+    retries: 3
+  env:
+    APP_NAME: go-example
+  security:
+    runAsUser: "65532:65532"
+    noNewPrivileges: true
+    capabilities:
+      drop: [ALL]
+  resources:
+    memory: 128Mi
+    cpu: "0.5"

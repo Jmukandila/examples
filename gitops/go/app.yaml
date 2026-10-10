@@ -1,0 +1,27 @@
+apiVersion: miabi.io/v1
+kind: Application
+metadata:
+  name: go-example
+spec:
+  image: ghcr.io/miabi-io/examples/go
+  tag: latest
+  externalLabel: go-example
+  ports:
+    - container: 8080
+      externalAccess: true
+  deployment:
+    strategy: rolling             # start the new release, wait for healthy, then switch traffic
+  healthcheck:
+    type: http
+    path: /healthz
+    intervalSeconds: 10
+  # A static binary on distroless needs no privileges at all. The root filesystem stays writable:
+  # with it read-only, the http check needs curl or wget in the image, and distroless has neither.
+  security:
+    runAsUser: "65532:65532"
+    noNewPrivileges: true
+    capabilities:
+      drop: [ALL]
+  resources:
+    memory: 64Mi
+    cpu: "0.25"

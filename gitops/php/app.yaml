@@ -1,0 +1,30 @@
+apiVersion: miabi.io/v1
+kind: Database
+metadata:
+  name: php-example-redis
+spec:
+  engine: redis
+  version: "8-alpine"
+---
+apiVersion: miabi.io/v1
+kind: Application
+metadata:
+  name: php-example
+spec:
+  image: ghcr.io/miabi-io/examples/php
+  tag: latest
+  externalLabel: php-example
+  ports:
+    - container: 80
+      externalAccess: true
+  healthcheck:
+    type: http
+    path: /healthz
+    intervalSeconds: 10
+  env:
+    REDIS_URL: "{{ .databases.php-example-redis.uri }}"
+  secretEnv:
+    - REDIS_URL
+  resources:
+    memory: 256Mi
+    cpu: "0.5"

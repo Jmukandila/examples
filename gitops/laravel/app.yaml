@@ -1,0 +1,37 @@
+# The nginx-php-fpm image also runs `queue:work` and the scheduler under supervisor
+# whenever it finds an artisan file, so this one container serves web, queue and cron.
+apiVersion: miabi.io/v1
+kind: Application
+metadata:
+  name: laravel-example
+spec:
+  image: ghcr.io/miabi-io/examples/laravel
+  tag: latest
+  externalLabel: laravel-example
+  ports:
+    - container: 80
+      externalAccess: true
+  healthcheck:
+    type: http
+    path: /up
+    intervalSeconds: 10
+    startPeriodSeconds: 20
+  env:
+    APP_NAME: Miabi Guestbook
+    APP_ENV: production
+    APP_DEBUG: "false"
+    APP_KEY: "{{ .secrets.laravel-app-key }}"
+    LOG_LEVEL: info
+    DB_CONNECTION: pgsql
+    DB_URL: "{{ .databases.laravel-db.uri }}"
+    REDIS_URL: "{{ .databases.laravel-redis.uri }}"
+    CACHE_STORE: redis
+    QUEUE_CONNECTION: redis
+    SESSION_DRIVER: redis
+  secretEnv:
+    - APP_KEY
+    - DB_URL
+    - REDIS_URL
+  resources:
+    memory: 512Mi
+    cpu: "1"

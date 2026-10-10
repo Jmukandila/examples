@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  node:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: node } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: node/package-lock.json }
+      - run: npm ci
+      - run: npm test
+
+  go:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: go } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version-file: go/go.mod }
+      - run: go vet ./...
+      - run: go test -race ./...
+
+  python:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: python } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.13", cache: pip, cache-dependency-path: python/requirements-dev.txt }
+      - run: pip install -r requirements-dev.txt
+      - run: python -m pytest -q
+
+  php:
+    runs-on: ubuntu-latest
+    container: php:8.4-cli
+    defaults: { run: { working-directory: php } }
+    steps:
+      - uses: actions/checkout@v4
+      - run: for f in public/*.php src/*.php tests/*.php; do php -l "$f"; done
+      - run: php tests/run.php
+
+  laravel:
+    runs-on: ubuntu-latest
+    container: jkaninda/nginx-php-fpm:8.4
+    defaults: { run: { working-directory: laravel } }
+    steps:
+      - uses: actions/checkout@v4
+      - run: composer install --no-interaction --no-progress --prefer-dist
+      - run: php artisan test
+
+  manifests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse every manifest and pipeline
+        run: |
+          python3 -m pip install --quiet pyyaml
+          python3 - <<'PY'
+          import pathlib, sys, yaml
+          bad = 0
+          files = [*pathlib.Path("gitops").rglob("*.yaml"), *pathlib.Path("pipelines").rglob("*.yaml"),
+                   *pathlib.Path(".").glob("*/.miabi/pipeline.yaml")]
+          for f in files:
+              for doc in yaml.safe_load_all(f.read_text()):
+                  if doc and (doc.get("apiVersion") != "miabi.io/v1" or "kind" not in doc):
+                      print(f"{f}: missing apiVersion miabi.io/v1 or kind"); bad += 1
+          print(f"checked {len(files)} files"); sys.exit(1 if bad else 0)
+          PY

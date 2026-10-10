@@ -1,0 +1,22 @@
+# Build and push an image with nothing deployed. Bind the pipeline to a registered Git
+# repository (not an application); the image lands at <registry>/ws_<id>/pl_<pipeline-name>.
+apiVersion: miabi.io/v1
+kind: Pipeline
+metadata:
+  name: go-image
+on:
+  push:
+    branches: [main]
+  manual: true
+  schedule: "0 3 * * 1"
+steps:
+  - name: test
+    image: golang:1.25-alpine
+    env:
+      CGO_ENABLED: "0"
+    run: cd go && go test ./...
+
+  - name: build
+    uses: build
+    context: go
+    dockerfile: go/Dockerfile

@@ -1,0 +1,24 @@
+# Both override the image entrypoint: it starts nginx and supervisor and ignores arguments.
+apiVersion: miabi.io/v1
+kind: Job
+metadata:
+  name: laravel-migrate
+spec:
+  app: laravel-example
+  entrypoint: ["php"]
+  command: ["artisan", "migrate", "--force"]
+  runPolicy: onRelease            # every release that goes live, including rollbacks
+  timeoutSeconds: 300
+  historyLimit: 10
+---
+apiVersion: miabi.io/v1
+kind: CronJob
+metadata:
+  name: laravel-prune-messages
+spec:
+  app: laravel-example
+  schedule: "0 3 * * *"           # UTC
+  entrypoint: ["php"]
+  command: ["artisan", "messages:prune", "--days=30"]
+  concurrencyPolicy: forbid
+  timeoutSeconds: 600

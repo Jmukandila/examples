@@ -1,0 +1,48 @@
+# Build on GitHub's runners, push to GHCR, then deploy that tag with miabi-io/deploy-action.
+# Copy to .github/workflows/deploy.yml in a repository holding one of the examples at its root.
+#
+#   Repository variable  MIABI_SERVER  https://miabi.example.com
+#   Repository secret    MIABI_TOKEN   a workspace-bound API token with the deploy scope
+#
+# The Miabi app must pull from ghcr.io/<owner>/<repo>; for a private package, add a
+# Registry credential in Miabi and select it on the app.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+      - name: Deploy to Miabi
+        uses: miabi-io/deploy-action@v1
+        with:
+          app: node-example
+          tag: ${{ github.sha }}
+          server: ${{ vars.MIABI_SERVER }}
+          token: ${{ secrets.MIABI_TOKEN }}
+          wait: 'true'
+          timeout: 15m

@@ -1,0 +1,44 @@
+# A release pipeline for the node example: test, build, scan, notify, deploy, plus a
+# nightly rebuild that picks up base-image fixes. Needs the SLACK_WEBHOOK workspace secret.
+apiVersion: miabi.io/v1
+kind: Pipeline
+metadata:
+  name: node-release
+on:
+  push:
+    branches: [main]
+  manual: true
+  schedule: "0 3 * * *"
+env:
+  NODE_ENV: production
+steps:
+  - name: test
+    image: node:22-alpine
+    env:
+      NODE_ENV: test
+    run: cd node && npm ci --no-audit --no-fund && npm test
+
+  - name: build
+    uses: build
+    context: node
+    dockerfile: node/Dockerfile
+
+  - name: scan
+    image: aquasec/trivy:0.67.2
+    continue-on-error: true
+    run: |
+      TRIVY_USERNAME="$MIABI_REGISTRY_USER" TRIVY_PASSWORD="$MIABI_REGISTRY_TOKEN" \
+        trivy image --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed "$MIABI_IMAGE_DIGEST"
+
+  - name: notify
+    image: curlimages/curl:8.16.0
+    continue-on-error: true
+    env:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    run: |
+      curl -fsS -X POST -H 'Content-Type: application/json' \
+        -d "{\"text\":\"$MIABI_PIPELINE #$MIABI_RUN_NUMBER built $MIABI_IMAGE_DIGEST from ${MIABI_COMMIT}\"}" \
+        "$SLACK_WEBHOOK"
+
+  - name: deploy
+    uses: deploy

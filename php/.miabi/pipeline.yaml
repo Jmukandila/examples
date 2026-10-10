@@ -1,0 +1,22 @@
+# Runs when this folder is the root of its own repository: create a Git app from that
+# repository and Miabi offers to adopt this file. Every deploy then runs it.
+apiVersion: miabi.io/v1
+kind: Pipeline
+metadata:
+  name: php-example
+on:
+  push:
+    branches: [main]
+  manual: true
+steps:
+  - name: test
+    image: php:8.4-cli
+    run: |
+      for f in public/*.php src/*.php tests/*.php; do php -l "$f" >/dev/null || exit 1; done
+      php tests/run.php
+
+  - name: build
+    uses: build
+
+  - name: deploy
+    uses: deploy

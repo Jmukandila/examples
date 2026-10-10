@@ -1,0 +1,25 @@
+# Bind to an application created from https://github.com/miabi-io/examples.
+# context points the build at one directory of the monorepo.
+apiVersion: miabi.io/v1
+kind: Pipeline
+metadata:
+  name: python-example
+on:
+  push:
+    branches: [main]
+  manual: true
+steps:
+  - name: test
+    image: python:3.13-slim
+    run: |
+      cd python
+      pip install --quiet --disable-pip-version-check -r requirements-dev.txt
+      python -m pytest -q
+
+  - name: build
+    uses: build
+    context: python
+    dockerfile: python/Dockerfile
+
+  - name: deploy
+    uses: deploy

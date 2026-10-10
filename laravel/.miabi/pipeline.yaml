@@ -1,0 +1,32 @@
+# Runs when this folder is the root of its own repository: create a Git app from that
+# repository and Miabi offers to adopt this file. Every deploy then runs it.
+#
+# Migrations are not a step here: a deploy step only queues the release. The Job in
+# gitops/laravel runs `php artisan migrate --force` each time a new release goes live.
+apiVersion: miabi.io/v1
+kind: Pipeline
+metadata:
+  name: laravel-example
+on:
+  push:
+    branches: [main]
+  manual: true
+steps:
+  - name: test
+    image: jkaninda/nginx-php-fpm:8.4
+    run: |
+      composer install --no-interaction --no-progress --prefer-dist
+      php artisan test
+
+  - name: build
+    uses: build
+
+  - name: scan
+    image: aquasec/trivy:0.67.2
+    continue-on-error: true
+    run: |
+      TRIVY_USERNAME="$MIABI_REGISTRY_USER" TRIVY_PASSWORD="$MIABI_REGISTRY_TOKEN" \
+        trivy image --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed "$MIABI_IMAGE_DIGEST"
+
+  - name: deploy
+    uses: deploy

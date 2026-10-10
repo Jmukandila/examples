@@ -1,0 +1,25 @@
+# Bind to an application created from https://github.com/miabi-io/examples.
+# context points the build at one directory of the monorepo.
+apiVersion: miabi.io/v1
+kind: Pipeline
+metadata:
+  name: php-example
+on:
+  push:
+    branches: [main]
+  manual: true
+steps:
+  - name: test
+    image: php:8.4-cli
+    run: |
+      cd php
+      for f in public/*.php src/*.php tests/*.php; do php -l "$f" >/dev/null || exit 1; done
+      php tests/run.php
+
+  - name: build
+    uses: build
+    context: php
+    dockerfile: php/Dockerfile
+
+  - name: deploy
+    uses: deploy

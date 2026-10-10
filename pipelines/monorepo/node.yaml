@@ -1,0 +1,22 @@
+# Bind to an application created from https://github.com/miabi-io/examples.
+# context points the build at one directory of the monorepo.
+apiVersion: miabi.io/v1
+kind: Pipeline
+metadata:
+  name: node-example
+on:
+  push:
+    branches: [main]
+  manual: true
+steps:
+  - name: test
+    image: node:22-alpine
+    run: cd node && npm ci --no-audit --no-fund && npm test
+
+  - name: build
+    uses: build
+    context: node
+    dockerfile: node/Dockerfile
+
+  - name: deploy
+    uses: deploy
