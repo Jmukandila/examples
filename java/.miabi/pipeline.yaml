@@ -1,0 +1,21 @@
+# Runs when this folder is the root of its own repository: create a Git app from that
+# repository and Miabi offers to adopt this file. Every deploy then runs it.
+apiVersion: miabi.io/v1
+kind: Pipeline
+metadata:
+  name: java-example
+on:
+  push:
+    branches: [main]
+  manual: true
+steps:
+  - name: test
+    image: maven:3.9-eclipse-temurin-25
+    run: mvn -B -q verify
+
+  - name: build
+    uses: build
+    platforms: [linux/amd64, linux/arm64]
+
+  - name: deploy
+    uses: deploy

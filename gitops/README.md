@@ -11,6 +11,8 @@ read as one bundle, so a folder can be split into files however reads best.
 | [`go`](go) | One app with every capability dropped, running as non-root |
 | [`python`](python) | An app and the managed Postgres it connects to |
 | [`php`](php) | An app and a managed Redis |
+| [`java`](java) | A plain Java app on distroless, running as non-root with every capability dropped |
+| [`spring-boot`](spring-boot) | A Spring Boot app and the managed Postgres it connects to, with a start period for the JVM |
 | [`laravel`](laravel) | Postgres, Redis, a generated `APP_KEY`, the app, a migration Job and a CronJob |
 | [`full-stack`](full-stack) | A `Project`: front end, API and database, a custom domain, a route with a rate limit |
 | [`environments`](environments) | The same app as `staging` (follows `latest`) and `production` (pinned) |
@@ -67,10 +69,10 @@ secret is written in Git:
 
 ```yaml
 env:
-  DATABASE_URL: "{{ .databases.python-example-db.uri }}"   # resolved at apply time
+  DB_URL: "{{ .databases.python-example-db.uri }}"         # resolved at apply time
   APP_KEY: "{{ .secrets.laravel-app-key }}"                 # a Secret with generate: true
   UPSTREAM_URL: "{{ .applications.notes-api }}"             # http://notes-api:8000
-secretEnv: [DATABASE_URL, APP_KEY]                          # stored encrypted at rest
+secretEnv: [DB_URL, APP_KEY]                                # stored encrypted at rest
 ```
 
 **Ordering.** Volumes, secrets and domains are created first, then databases, then apps, then

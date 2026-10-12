@@ -22,9 +22,9 @@ spec:
     path: /healthz
     intervalSeconds: 10
   env:
-    DATABASE_URL: "{{ .databases.python-example-db.uri }}"
+    DB_URL: "{{ .databases.python-example-db.uri }}"
   secretEnv:
-    - DATABASE_URL
+    - DB_URL
   resources:
     memory: 256Mi
     cpu: "0.5"

@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: spring-boot-example
+  # Without DB_URL, no datasource URL is set and Boot starts an embedded H2 instead.
+  lifecycle:
+    # Swarm sends SIGKILL 10s after SIGTERM: finish in-flight requests before that.
+    timeout-per-shutdown-phase: 8s
+
+server:
+  port: ${PORT:8080}
+  shutdown: graceful
+  # TLS ends at the Miabi gateway, so trust its X-Forwarded-* headers.
+  forward-headers-strategy: native
+
+management:
+  endpoints:
+    web:
+      base-path: /
+      path-mapping:
+        health: healthz
+  endpoint:
+    health:
+      probes:
+        enabled: true

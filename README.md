@@ -8,9 +8,11 @@ and shuts down cleanly when Miabi replaces a release.
 |---|---|---|---|
 | [`node/`](node) | Node.js 22, Express | 3000 | Tests with `node:test`, calling another app by name |
 | [`go/`](go) | Go, [Okapi](https://github.com/jkaninda/okapi), distroless | 8080 | Multi-arch builds, version stamping, a container with no capabilities |
-| [`python/`](python) | Python 3.13, FastAPI | 8000 | A managed Postgres database wired in through `DATABASE_URL` |
+| [`python/`](python) | Python 3.13, FastAPI | 8000 | A managed Postgres database wired in through `DB_URL` |
 | [`php/`](php) | PHP 8.4 on [`jkaninda/nginx-php-fpm`](https://github.com/jkaninda/nginx-php-fpm) | 80 | Plain PHP, plus a managed Redis visit counter |
 | [`laravel/`](laravel) | Laravel 13 on `jkaninda/nginx-php-fpm` | 80 | Postgres, Redis, queue worker, migrations as a Job, a CronJob |
+| [`java/`](java) | Java 25, JDK `HttpServer`, distroless | 8080 | No framework, a `jlink` runtime of about 40 MB, no capabilities |
+| [`spring-boot/`](spring-boot) | Java 25, Spring Boot 4 | 8080 | Postgres with Flyway, JVM sizing from the memory limit, graceful shutdown |
 | [`gitops/`](gitops) | `miabi.io/v1` manifests | | One folder per Git source: each app, a multi-app project, staging and production |
 | [`pipelines/`](pipelines) | `kind: Pipeline` specs | | Monorepo builds, build-only images, release with scan and notify, GitHub Actions |
 
@@ -39,10 +41,10 @@ build straight from this monorepo instead, use the specs in
 
 ```
 .
-├── node/  go/  python/  php/  laravel/   # the apps: source, tests, Dockerfile, .miabi/pipeline.yaml
-├── gitops/                               # miabi.io/v1 manifests, one folder per Git source
-├── pipelines/                            # pipeline specs for this monorepo, GitHub Actions
-└── .github/workflows/                    # CI for every example; publishes the ghcr.io images
+├── node/  go/  python/  php/  laravel/  java/  spring-boot/   # the apps: source, tests, Dockerfile, .miabi/pipeline.yaml
+├── gitops/                                                   # miabi.io/v1 manifests, one folder per Git source
+├── pipelines/                                                # pipeline specs for this monorepo, GitHub Actions
+└── .github/workflows/                                        # CI for every example; publishes the ghcr.io images
 ```
 
 Each app answers on the same routes, so you can check any of them the same way:
@@ -67,7 +69,8 @@ Each app answers on the same routes, so you can check any of them the same way:
 docker build -t example ./go && docker run --rm -p 8080:8080 example
 ```
 
-The PHP and Laravel images listen on port 80, Node on 3000, Python on 8000.
+The PHP and Laravel images listen on port 80, Node on 3000, Python on 8000, and Go, Java and
+Spring Boot on 8080.
 
 ## Publishing the images
 

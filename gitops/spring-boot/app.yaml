@@ -1,0 +1,31 @@
+apiVersion: miabi.io/v1
+kind: Database
+metadata:
+  name: spring-boot-example-db
+spec:
+  engine: postgres
+  version: "17-alpine"
+---
+apiVersion: miabi.io/v1
+kind: Application
+metadata:
+  name: spring-boot-example
+spec:
+  image: ghcr.io/miabi-io/examples/spring-boot
+  tag: latest
+  externalLabel: spring-boot-example
+  ports:
+    - container: 8080
+      externalAccess: true
+  healthcheck:
+    type: http
+    path: /healthz
+    intervalSeconds: 10
+    startPeriodSeconds: 30
+  env:
+    DB_URL: "{{ .databases.spring-boot-example-db.uri }}"
+  secretEnv:
+    - DB_URL
+  resources:
+    memory: 512Mi
+    cpu: "1"

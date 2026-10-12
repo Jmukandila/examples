@@ -15,13 +15,13 @@ STARTED = time.monotonic()
 
 
 def database_url() -> str | None:
-    return os.environ.get("DATABASE_URL") or None
+    return os.environ.get("DB_URL") or None
 
 
 def connect() -> psycopg.Connection:
     url = database_url()
     if url is None:
-        raise HTTPException(status_code=503, detail="DATABASE_URL is not set")
+        raise HTTPException(status_code=503, detail="DB_URL is not set")
     return psycopg.connect(url, connect_timeout=5)
 
 

@@ -54,6 +54,24 @@ jobs:
       - run: composer install --no-interaction --no-progress --prefer-dist
       - run: php artisan test
 
+  java:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: java } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "25", cache: maven, cache-dependency-path: java/pom.xml }
+      - run: ./mvnw -B verify
+
+  spring-boot:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: spring-boot } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "25", cache: maven, cache-dependency-path: spring-boot/pom.xml }
+      - run: ./mvnw -B verify
+
   manifests:
     runs-on: ubuntu-latest
     steps:

@@ -1,0 +1,23 @@
+# Bind to an application created from https://github.com/miabi-io/examples.
+# context points the build at one directory of the monorepo.
+apiVersion: miabi.io/v1
+kind: Pipeline
+metadata:
+  name: spring-boot-example
+on:
+  push:
+    branches: [main]
+  manual: true
+steps:
+  - name: test
+    image: maven:3.9-eclipse-temurin-25
+    run: cd spring-boot && mvn -B -q verify
+
+  - name: build
+    uses: build
+    context: spring-boot
+    dockerfile: spring-boot/Dockerfile
+    platforms: [linux/amd64, linux/arm64]
+
+  - name: deploy
+    uses: deploy

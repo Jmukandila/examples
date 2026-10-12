@@ -1,7 +1,7 @@
 # Python example
 
 A [FastAPI](https://fastapi.tiangolo.com) service on Python 3.13 under uvicorn. With
-`DATABASE_URL` set it stores notes in Postgres; without it, everything except the notes API
+`DB_URL` set it stores notes in Postgres; without it, everything except the notes API
 still works.
 
 | Route | |
@@ -22,9 +22,9 @@ and passes its connection string in, so no credential appears in the file:
 
 ```yaml
 env:
-  DATABASE_URL: "{{ .databases.python-example-db.uri }}"
+  DB_URL: "{{ .databases.python-example-db.uri }}"
 secretEnv:
-  - DATABASE_URL        # stored encrypted at rest
+  - DB_URL              # stored encrypted at rest
 ```
 
 The database is created before the app on the first apply.
@@ -34,7 +34,7 @@ The database is created before the app on the first apply.
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
 .venv/bin/pytest
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/postgres .venv/bin/uvicorn app.main:app --reload
+DB_URL=postgres://postgres:postgres@localhost:5432/postgres .venv/bin/uvicorn app.main:app --reload
 ```
 
 ## Deploy it

@@ -26,8 +26,8 @@ spec:
         healthcheck: { type: http, path: /healthz }
         env:
           APP_NAME: notes-api
-          DATABASE_URL: "{{ .databases.notes-db.uri }}"
-        secretEnv: [DATABASE_URL]
+          DB_URL: "{{ .databases.notes-db.uri }}"
+        secretEnv: [DB_URL]
         resources: { memory: 256Mi, cpu: "0.5" }
 
     - apiVersion: miabi.io/v1

@@ -1,0 +1,23 @@
+apiVersion: miabi.io/v1
+kind: Application
+metadata:
+  name: java-example
+spec:
+  image: ghcr.io/miabi-io/examples/java
+  tag: latest
+  externalLabel: java-example
+  ports:
+    - container: 8080
+      externalAccess: true
+  healthcheck:
+    type: http
+    path: /healthz
+    intervalSeconds: 10
+  security:
+    runAsUser: "65532:65532"
+    noNewPrivileges: true
+    capabilities:
+      drop: [ALL]
+  resources:
+    memory: 128Mi
+    cpu: "0.5"

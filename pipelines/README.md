@@ -15,6 +15,8 @@ patterns that need no app at all.
 | [`monorepo/python.yaml`](monorepo/python.yaml) | An app | `pytest`, build `python/`, deploy |
 | [`monorepo/php.yaml`](monorepo/php.yaml) | An app | Lint and test, build `php/`, deploy |
 | [`monorepo/laravel.yaml`](monorepo/laravel.yaml) | An app | `php artisan test`, build `laravel/`, Trivy scan, deploy |
+| [`monorepo/java.yaml`](monorepo/java.yaml) | An app | `mvn verify`, build `java/` for amd64 and arm64, deploy |
+| [`monorepo/spring-boot.yaml`](monorepo/spring-boot.yaml) | An app | `mvn verify`, build `spring-boot/` for amd64 and arm64, deploy |
 | [`build-only.yaml`](build-only.yaml) | A Git repository | Test and build `go/`, push the image, deploy nothing. Also weekly |
 | [`release.yaml`](release.yaml) | An app | Test, build, scan, Slack notice, deploy. Also nightly |
 | [`github-actions/deploy.yml`](github-actions/deploy.yml) | — | Build on GitHub, push to GHCR, deploy with `miabi-io/deploy-action` |
@@ -38,8 +40,8 @@ Container steps start in the repository root too, so their commands `cd` into th
 ### 1. Create the app
 
 In the console, create an application from Git with `https://github.com/miabi-io/examples`,
-branch `main`, and the example's port (3000 for Node, 8080 for Go, 8000 for Python, 80 for PHP
-and Laravel). Decline the offer to use a pipeline from the repository: there is none at the root.
+branch `main`, and the example's port (3000 for Node, 8080 for Go, Java and Spring Boot, 8000 for Python,
+80 for PHP and Laravel). Decline the offer to use a pipeline from the repository: there is none at the root.
 
 ### 2. Create the pipeline
 

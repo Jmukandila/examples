@@ -6,7 +6,7 @@ from app.main import app
 
 @pytest.fixture
 def client(monkeypatch):
-    monkeypatch.delenv("DATABASE_URL", raising=False)
+    monkeypatch.delenv("DB_URL", raising=False)
     monkeypatch.setenv("APP_VERSION", "1.2.3")
     with TestClient(app) as c:
         yield c
