@@ -32,6 +32,8 @@ spec:
     - APP_KEY
     - DB_URL
     - REDIS_URL
+  security:
+    runAsUser: "1000:1000"
   resources:
     memory: 512Mi
     cpu: "1"
