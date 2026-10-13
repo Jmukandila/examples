@@ -25,6 +25,8 @@ spec:
     REDIS_URL: "{{ .databases.php-example-redis.uri }}"
   secretEnv:
     - REDIS_URL
+  security:
+    runAsUser: "1000:1000"
   resources:
     memory: 256Mi
     cpu: "0.5"
