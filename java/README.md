@@ -21,8 +21,10 @@ For a framework, a database and migrations, see the [Spring Boot example](../spr
   Java runtime of about 40 MB instead of shipping a full JRE. Add a module there when the code
   starts using one, such as `java.sql`; `jdeps --print-module-deps target/app.jar` lists them.
 - **Multi-arch.** Compiling runs on the build machine's own platform, since bytecode runs
-  anywhere. Only the short `jlink` stage runs on the target platform, so
-  `platforms: [linux/amd64, linux/arm64]` stays fast. It needs runner 0.0.11 or later.
+  anywhere. `jlink` also runs there, linking against the target platform's jmods (Temurin 25
+  ships none, so the build fetches them from Adoptium for the exact JDK version). No stage needs
+  emulation, so `platforms: [linux/amd64, linux/arm64]` works on a runner without QEMU. It needs
+  runner 0.0.11 or later.
 - **Memory.** `-XX:MaxRAMPercentage=75` sizes the heap from the container's limit, so 128Mi gives
   about 96 MiB of heap. `-XX:+ExitOnOutOfMemoryError` lets Miabi replace a container that runs
   out, instead of leaving it half alive.

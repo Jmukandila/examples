@@ -8,8 +8,8 @@ COPY src ./src
 RUN --mount=type=cache,target=/root/.m2 mvn -B -q package -DskipTests \
  && java -Djarmode=tools -jar target/app.jar extract --layers --launcher --destination /out
 
+# No RUN in this stage: it builds for the target platform, which would need emulation.
 FROM eclipse-temurin:25-jre
-RUN useradd --system --uid 10001 app
 WORKDIR /app
 # Dependencies change least often, so they get their own layers and a new release ships only the app layer.
 COPY --from=build /out/dependencies/ ./
